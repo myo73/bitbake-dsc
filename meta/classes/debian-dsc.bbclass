@@ -2,6 +2,7 @@
 # https://github.com/alexbluesman/bitbake-dsc/blob/master/meta/classes/debian-dsc.bbclass
 # Copyright (C) 2018 Alexander Smirnov
 
+
 python __anonymous() {
     # Fetch .dsc package file
     dsc_uri = (d.getVar('DSC_URI', True) or "").split()
@@ -29,9 +30,11 @@ python __anonymous() {
                 pv = line.split(": ")[-1].rstrip()
                 d.setVar('PV', pv)
             elif line.startswith('Files:'):
+                print("Files:")
                 line = file.readline()
                 while line and line.startswith(' '):
                     f = line.split()[2]
+                    print("file_name: " + f)
                     files.append(repo + f)
                     line = file.readline()
                 break
@@ -39,6 +42,18 @@ python __anonymous() {
         file.close()
     src_uri = d.getVar('SRC_URI', True) or ""
     d.setVar('SRC_URI', src_uri + ' ' + ' '.join(files))
+    src_uri = (d.getVar('SRC_URI', True) or "").split()
+
+#    if len(src_uri) == 0:
+#        return
+#    try:
+    fetcher = bb.fetch2.Fetch(src_uri, d)
+    fetcher.download()
+#    except bb.fetch2.BBFetchException as e:
+#        raise bb.build.FuncFailed(e)
+
+    rootdir = d.getVar('WORKDIR')
+    fetcher.unpack(rootdir)
 
 # TODO:
 # 1. Get the name of tarball and set SRC_URI (lightweight dsc backend) => Done
