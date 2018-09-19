@@ -38,15 +38,6 @@ DISTRO_ARCH ??= "armhf"
 #
 # This sets the default multiple configurations used:
 BBMULTICONFIG = " \
-    qemuarm-wheezy \
-    qemuarm-jessie \
-    qemuarm-stretch \
-    qemuarm64-stretch \
-    qemui386-jessie \
-    qemui386-stretch \
-    qemuamd64-jessie \
-    qemuamd64-stretch \
-    rpi-jessie \
 "
 
 #
