@@ -2,9 +2,20 @@
 # https://github.com/alexbluesman/bitbake-dsc/blob/master/meta/classes/debian-dsc.bbclass
 # Copyright (C) 2018 Alexander Smirnov
 
+def get_deb_host_arch():
+    import subprocess
+    host_arch = subprocess.Popen("dpkg --print-architecture",
+                                 shell=True,
+                                 env=os.environ,
+                                 stdout=subprocess.PIPE
+                                ).stdout.read().decode('utf-8').strip()
+    return host_arch
 
 python __anonymous() {
-    # Fetch .dsc package file
+    import subprocess
+
+
+# Fetch .dsc package file
     dsc_uri = (d.getVar('DSC_URI', True) or "").split()
     if len(dsc_uri) == 0:
         return
@@ -35,7 +46,7 @@ python __anonymous() {
                 while line and line.startswith(' '):
                     f = line.split()[2]
                     print("file_name: " + f)
-                    files.append(repo + f)
+                    files.append(repo + f + ";unpack=0;")
                     line = file.readline()
                 break
             line = file.readline()
@@ -43,6 +54,7 @@ python __anonymous() {
     src_uri = d.getVar('SRC_URI', True) or ""
     d.setVar('SRC_URI', src_uri + ' ' + ' '.join(files))
     src_uri = (d.getVar('SRC_URI', True) or "").split()
+
 
 #    if len(src_uri) == 0:
 #        return
@@ -53,7 +65,15 @@ python __anonymous() {
 #        raise bb.build.FuncFailed(e)
 
     rootdir = d.getVar('WORKDIR')
+    bb.plain("rootdir: " + rootdir)
     fetcher.unpack(rootdir)
+
+    host_arch = get_deb_host_arch()
+    bb.plain("host_arch : "  + host_arch)
+    subprocess.run(["dpkg", "--print-architecture"])
+    bb.plain("dpkg --print-architectre completed")
+#    subprocess.run(["dpkg-source", " -x", "hello_2.9-2+deb8u1.dsc"])
+#    subprocess.run(["dpkg-source -x", " *.dsc"])
 
 # TODO:
 # 1. Get the name of tarball and set SRC_URI (lightweight dsc backend) => Done
