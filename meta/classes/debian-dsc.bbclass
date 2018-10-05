@@ -2,12 +2,6 @@
 # https://github.com/alexbluesman/bitbake-dsc/blob/master/meta/classes/debian-dsc.bbclass
 # Copyright (C) 2018 Alexander Smirnov
 
-do_unpack_deb_src() {
-  cd ${WORKDIR}
-  dpkg-source -x ${PN}_${PV}.dsc
-}
-addtask unpack_deb_src after do_fetch before do_build
-
 python __anonymous() {
 
 # Fetch .dsc package file
@@ -64,3 +58,20 @@ python __anonymous() {
     rootdir = d.getVar('WORKDIR')
     fetcher.unpack(rootdir)
 }
+
+do_unpack_deb_src() {
+  cd ${WORKDIR}
+  dpkg-source -x ${PN}_${PV}.dsc
+}
+addtask unpack_deb_src after do_fetch before do_build
+
+do_install_build_dep() {
+  sudo apt-get build-dep ${PN}
+}
+addtask install_build_dep after unpack_deb_src before do_build
+
+do_build_deb() {
+  cd ${WORKDIR}/${PN}-*
+  debuild -us -uc
+}
+addtask build_deb after install_build_dep before do_build
