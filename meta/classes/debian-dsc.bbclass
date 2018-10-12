@@ -22,6 +22,7 @@ python __anonymous() {
     repo = (dsc_uri[0].split(";")[0]).replace(dsc_file, "")
     files = []
 
+
     # Parse .dsc for the important fields
     with open(filepath, 'r') as file:
         line = file.readline()
@@ -30,6 +31,8 @@ python __anonymous() {
             if line.startswith('Version:'):
                 pv = line.split(": ")[-1].rstrip()
                 d.setVar('PV', pv)
+                orig_ver =  pv.split("-")[0]
+                d.setVar('UPSTREAM_VER', orig_ver)
             elif line.startswith('Files:'):
                 line = file.readline()
                 while line and line.startswith(' '):
@@ -42,10 +45,22 @@ python __anonymous() {
 
     src_uri = d.getVar('SRC_URI', True) or ""
     bb.plain("SRC_URI: " + src_uri)
+
     files.append(repo + dsc_file + ";unpack=0;")
     d.setVar('SRC_URI', src_uri + ' ' + ' '.join(files))
+    src_uri = d.getVar('SRC_URI', True) or ""
+    bb.plain("SRC_URI: " + src_uri)
     src_uri = (d.getVar('SRC_URI', True) or "").split()
 
+    local_build_dep = []
+    local_build_dep.append("wget")
+
+    # inject DEPENDS for local packages
+    dep_list = d.getVar('DEPENDS', True) or ""
+    bb.plain("Before DEPENDS: " + dep_list)
+    d.setVar('DEPENDS', dep_list + ' ' + ' '.join(local_build_dep))
+    dep_list = d.getVar('DEPENDS', True) or ""
+    bb.plain("After DEPENDS: " + dep_list)
 
 #    if len(src_uri) == 0:
 #        return
@@ -59,18 +74,21 @@ python __anonymous() {
     fetcher.unpack(rootdir)
 }
 
+
 do_unpack_deb_src() {
   cd ${WORKDIR}
+  rm -rf ${PN}-${UPSTREAM_VER}
   dpkg-source -x ${PN}_${PV}.dsc
 }
-addtask unpack_deb_src after do_fetch before do_build
+addtask unpack_deb_src before do_build
 
 do_install_build_dep() {
-  sudo apt-get build-dep ${PN}
+  sudo apt-get build-dep --yes ${PN}
 }
 addtask install_build_dep after unpack_deb_src before do_build
 
 do_build_deb() {
+#  cd ${WORKDIR}/${PN}-${UPSTREAM_VER}
   cd ${WORKDIR}/${PN}-*
   debuild -us -uc
 }
