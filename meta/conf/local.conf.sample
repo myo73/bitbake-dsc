@@ -18,7 +18,7 @@
 # of emulated machines available which can boot and run in the QEMU emulator:
 #
 # This sets the default machine to be qemuarm if no other machine is selected:
-MACHINE ??= "qemuarm"
+MACHINE ??= "qemuamd64"
 
 #
 # Multistrap Configuration Selection
@@ -27,8 +27,8 @@ MACHINE ??= "qemuarm"
 # generation of buildchroot environment and target root filesystem.
 #
 # This sets the default multistrap configuration:
-DISTRO ??= "debian-jessie"
-DISTRO_ARCH ??= "armhf"
+DISTRO ??= "debian-stretch"
+DISTRO_ARCH ??= "amd64"
 
 #
 # Multiple Configuration Selection
