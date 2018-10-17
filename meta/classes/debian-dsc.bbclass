@@ -22,7 +22,6 @@ python __anonymous() {
     repo = (dsc_uri[0].split(";")[0]).replace(dsc_file, "")
     files = []
 
-
     # Parse .dsc for the important fields
     with open(filepath, 'r') as file:
         line = file.readline()
@@ -52,8 +51,12 @@ python __anonymous() {
     bb.plain("SRC_URI: " + src_uri)
     src_uri = (d.getVar('SRC_URI', True) or "").split()
 
+    pn = d.getVar('PN', True) or ""
+    bb.plain("PN: " + pn)
+
     local_build_dep = []
-    local_build_dep.append("wget")
+    if pn == "hello":
+        local_build_dep.append("wget")
 
     # inject DEPENDS for local packages
     dep_list = d.getVar('DEPENDS', True) or ""
