@@ -75,10 +75,11 @@ python __anonymous() {
 }
 
 
+S = "${WORKDIR}/${PN}-${UPSTREAM_VER}"
+
 do_unpack_deb_src() {
-  cd ${WORKDIR}
-  rm -rf ${PN}-${UPSTREAM_VER}
-  dpkg-source -x ${PN}_${PV}.dsc
+  rm -rf ${S}
+  dpkg-source -x ${WORKDIR}/${PN}_${PV}.dsc ${S}
 }
 addtask unpack_deb_src before do_build
 
@@ -88,8 +89,7 @@ do_install_build_dep() {
 addtask install_build_dep after unpack_deb_src before do_build
 
 do_build_deb() {
-#  cd ${WORKDIR}/${PN}-${UPSTREAM_VER}
-  cd ${WORKDIR}/${PN}-*
+  cd ${S}
   debuild -us -uc
 }
 addtask build_deb after install_build_dep before do_build
